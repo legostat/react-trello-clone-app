@@ -4,22 +4,39 @@ type AddItemButtonProps = {
   dark?: boolean;
 };
 
-interface DragPreviewContainerProps {
+type DragPreviewWrapperProps = {
+  position: {
+    x: number;
+    y: number;
+  };
+};
+
+type DragPreviewContainerProps = {
   isHidden?: boolean;
-}
+  isPreview?: boolean;
+};
+
+export const DragPreviewWrapper = styled.div.attrs<DragPreviewWrapperProps>(
+  ({ position: { x, y } }) => ({
+    style: {
+      transform: `translate(${x}px, ${y}px)`,
+    },
+  })
+)<DragPreviewWrapperProps>``;
 
 export const DragPreviewContainer = styled.div<DragPreviewContainerProps>`
-  opacity: ${(props) => (props.hidden ? 0.3 : 1)};
+  opacity: ${(props) => (props.isHidden ? 0 : 1)};
+  transform: ${(props) => (props.isPreview ? "rotate(5deg)" : undefined)};
 `;
 
 export const AppContainer = styled.div`
-  align-items: flex-start;
-  background-color: #3179ba;
   display: flex;
   flex-direction: row;
+  align-items: flex-start;
   height: 100%;
-  padding: 20px;
   width: 100%;
+  padding: 20px;
+  background-color: #3179ba;
 `;
 
 export const ColumnContainer = styled(DragPreviewContainer)`
@@ -88,4 +105,14 @@ export const NewItemInput = styled.input`
   margin-bottom: 0.5rem;
   padding: 0.5rem 1rem;
   width: 100%;
+`;
+
+export const CustomDragLayerContainer = styled.div`
+  height: 100%;
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 100;
+  pointer-events: none;
 `;
