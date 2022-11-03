@@ -1,12 +1,12 @@
 import { useRef } from "react";
-import { useDrop } from "react-dnd";
+import { ColumnContainer, ColumnTitle } from "./styles";
 import { useAppState } from "./state/AppStateContext";
-import { addTask, moveList } from "./state/actions";
-import { useItemDrag } from "./utils/useItemDrag";
-import { isHidden } from "./utils/isHidden";
-import { ColumnTitle, ColumnContainer } from "./styles";
-import { AddNewItem } from "./AddNewItem";
 import { Card } from "./Card";
+import { AddNewItem } from "./AddNewItem";
+import { useItemDrag } from "./utils/useItemDrag";
+import { useDrop } from "react-dnd";
+import { isHidden } from "./utils/isHidden";
+import { addTask, moveTask, moveList, setDraggedItem } from "./state/actions";
 
 type ColumnProps = {
   text: string;
@@ -19,7 +19,7 @@ export const Column = ({ text, id, isPreview }: ColumnProps) => {
   const tasks = getTasksByListId(id);
   const ref = useRef<HTMLDivElement>(null);
   const [, drop] = useDrop({
-    accept: "COLUMN",
+    accept: ["COLUMN", "CARD"],
     hover() {
       if (!draggedItem) {
         return;
@@ -30,11 +30,22 @@ export const Column = ({ text, id, isPreview }: ColumnProps) => {
         }
 
         dispatch(moveList(draggedItem.id, id));
+      } else {
+        if (draggedItem.columnId === id) {
+          return;
+        }
+        if (tasks.length) {
+          return;
+        }
+
+        dispatch(moveTask(draggedItem.id, null, draggedItem.columnId, id));
+        dispatch(setDraggedItem({ ...draggedItem, columnId: id }));
       }
     },
   });
 
   const { drag } = useItemDrag({ type: "COLUMN", id, text });
+
   drag(drop(ref));
 
   return (
@@ -45,11 +56,12 @@ export const Column = ({ text, id, isPreview }: ColumnProps) => {
     >
       <ColumnTitle>{text}</ColumnTitle>
       {tasks.map((task) => (
-        <Card text={task.text} key={task.id} id={task.id} />
+        <Card id={task.id} columnId={id} text={task.text} key={task.id} />
       ))}
       <AddNewItem
-        toggleButtonText="+ Add another task"
+        toggleButtonText="+ Add another card"
         onAdd={(text) => dispatch(addTask(text, id))}
+        dark
       />
     </ColumnContainer>
   );
